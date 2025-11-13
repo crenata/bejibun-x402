@@ -39,16 +39,14 @@ config/x402.ts
 
 ```ts
 const config: Record<string, any> = {
-    connection: "redis",
-
-    connections: {
-        redis: {
-            host: "127.0.0.100",
-            port: 6379,
-            password: "",
-            database: 0
-        }
-    }
+    version: 1,
+    network: "base-sepolia",
+    address: "0x0000000000000000000000000000000000000000",
+    price: "$0.01",
+    timeout: 60,
+    discoverable: true,
+    forceJson: false,
+    testnet: true
 };
 
 export default config;
@@ -60,14 +58,9 @@ You can pass the value with environment variables.
 How to use tha package.
 
 ```ts
-import x402 from "@bejibun/x402";
+import X402 from "@bejibun/x402";
 
-await x402.remember("key", () => {}); // any
-await x402.has("key"); // boolean
-await x402.get("key"); // any
-await x402.add("key", "Hello world"); // boolean
-await x402.put("key", "Lorem ipsum"); // boolean
-await x402.forget("key"); // void
+X402.setConfig().setFacilitator().setPaywall().setRequest().middleware(); // Not yet finished
 ```
 
 ## Contributors
