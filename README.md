@@ -1,0 +1,85 @@
+<div align="center">
+
+<img src="https://github.com/crenata/bejibun/blob/master/public/images/bejibun.png?raw=true" width="150" alt="Bejibun" />
+
+![GitHub top language](https://img.shields.io/github/languages/top/crenata/bejibun-x402)
+![GitHub all releases](https://img.shields.io/github/downloads/crenata/bejibun-x402/total)
+![GitHub issues](https://img.shields.io/github/issues/crenata/bejibun-x402)
+![GitHub](https://img.shields.io/github/license/crenata/bejibun-x402)
+![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/v/release/crenata/bejibun-x402?display_name=tag&include_prereleases)
+
+</div>
+
+# x402 for Bejibun
+x402 for Bejibun Framework.
+
+## Usage
+
+### Installation
+Install the package.
+
+```bash
+# Using Bun
+bun add @bejibun/x402
+
+# Using Bejibun
+bun ace install @bejibun/x402
+```
+
+### Configuration
+The configuration file automatically executed if you are using `ace`.
+
+Or
+
+Add `x402.ts` inside config directory on your project if doesn't exist.
+
+```bash
+config/x402.ts
+```
+
+```ts
+const config: Record<string, any> = {
+    connection: "redis",
+
+    connections: {
+        redis: {
+            host: "127.0.0.100",
+            port: 6379,
+            password: "",
+            database: 0
+        }
+    }
+};
+
+export default config;
+```
+
+You can pass the value with environment variables.
+
+### How to Use
+How to use tha package.
+
+```ts
+import x402 from "@bejibun/x402";
+
+await x402.remember("key", () => {}); // any
+await x402.has("key"); // boolean
+await x402.get("key"); // any
+await x402.add("key", "Hello world"); // boolean
+await x402.put("key", "Lorem ipsum"); // boolean
+await x402.forget("key"); // void
+```
+
+## Contributors
+- [Havea Crenata](mailto:havea.crenata@gmail.com)
+
+## ☕ Support / Donate
+
+If you find this project helpful and want to support it, you can donate via crypto :
+
+| EVM                                                                                                     | Solana                                                                                                  |
+| ------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| <img src="https://github.com/crenata/bejibun/blob/master/public/images/EVM.png?raw=true" width="150" /> | <img src="https://github.com/crenata/bejibun/blob/master/public/images/SOL.png?raw=true" width="150" /> |
+| 0xdABe8750061410D35cE52EB2a418c8cB004788B3                                                              | GAnoyvy9p3QFyxikWDh9hA3fmSk2uiPLNWyQ579cckMn                                                            |
+
+Or you can buy this `$BJBN (Bejibun)` tokens [here](https://pump.fun/coin/CQhbNnCGKfDaKXt8uE61i5DrBYJV7NPsCDD9vQgypump), beware of bots.
