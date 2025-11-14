@@ -5,15 +5,15 @@ import X402Builder from "@/builders/X402Builder";
 export type {TFacilitator, TPaywall, TX402Config};
 
 export default class X402 {
-    public static setConfig(config: TX402Config): X402Builder {
+    public static setConfig(config?: TX402Config): X402Builder {
         return new X402Builder().setConfig(config);
     }
 
-    public static setFacilitator(config: TFacilitator): X402Builder {
+    public static setFacilitator(config?: TFacilitator): X402Builder {
         return new X402Builder().setFacilitator(config);
     }
 
-    public static setPaywall(config: TPaywall): X402Builder {
+    public static setPaywall(config?: TPaywall): X402Builder {
         return new X402Builder().setPaywall(config);
     }
 

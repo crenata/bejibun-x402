@@ -37,7 +37,7 @@
     "dependencies": {
         "@bejibun/app": "^0.1.22",
         "@bejibun/logger": "^0.1.22",
-        "@bejibun/utils": "^0.1.20",
-        "x402": "^0.7.1"
+        "@bejibun/utils": "^0.1.21",
+        "x402": "^0.7.2"
     }
 }

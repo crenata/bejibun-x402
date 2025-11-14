@@ -29,7 +29,6 @@ export type TX402Config = {
     customPaywallHtml?: string;
     description?: string;
     discoverable?: boolean;
-    maxTimeoutSeconds?: number;
     mimeType?: string;
     inputSchema?: Record<string, any>;
     outputSchema?: Record<string, any>;
@@ -49,13 +48,13 @@ export type TToken = {
 
 export default class X402Builder {
     protected conf: Record<string, any>;
-    protected facilitatorConfig: FacilitatorConfig = {
-        url: "`${string}://${string}`"
-    };
-    protected payloadConfig: TX402Config = {};
+    protected facilitatorConfig?: FacilitatorConfig;
+    protected payloadConfig?: TX402Config = {};
     protected paymentRequirements: Array<PaymentRequirements> = [];
-    protected paywallConfig: PaywallConfig = {};
+    protected paywallConfig?: PaywallConfig = {};
     protected request?: Bun.BunRequest;
+    protected decoded?: PaymentPayload;
+    protected token?: TToken;
 
     public constructor() {
         const configPath = App.Path.configPath("x402.ts");
@@ -78,11 +77,13 @@ export default class X402Builder {
         return useFacilitator(this.facilitatorConfig);
     }
 
-    private get token(): TToken {
+    private initToken(): TToken {
         const atomicAmountForAsset = processPriceToAtomicAmount(this.config.price, this.config.network);
         if ("error" in atomicAmountForAsset) throw new X402Exception(atomicAmountForAsset.error);
 
-        return atomicAmountForAsset;
+        this.token = atomicAmountForAsset;
+
+        return this.token;
     }
 
     private async requirements(): Promise<Array<PaymentRequirements>> {
@@ -90,7 +91,7 @@ export default class X402Builder {
             this.paymentRequirements.push({
                 scheme: "exact",
                 network: this.config.network,
-                maxAmountRequired: this.token.maxAmountRequired,
+                maxAmountRequired: (this.token as TToken).maxAmountRequired,
                 resource: defineValue(this.request?.url, ""),
                 description: defineValue(this.payloadConfig?.description, ""),
                 mimeType: defineValue(this.payloadConfig?.mimeType, ""),
@@ -106,7 +107,7 @@ export default class X402Builder {
                     },
                     output: defineValue(this.payloadConfig?.outputSchema, {})
                 },
-                extra: (this.token.asset as ERC20TokenAmount["asset"]).eip712
+                extra: (this.token?.asset as ERC20TokenAmount["asset"]).eip712
             });
         } else if (SupportedSVMNetworks.includes(this.config.network)) {
             const paymentKinds = await this.facilitator.supported();
@@ -124,7 +125,7 @@ export default class X402Builder {
             this.paymentRequirements.push({
                 scheme: "exact",
                 network: this.config.network,
-                maxAmountRequired: this.token.maxAmountRequired,
+                maxAmountRequired: (this.token as TToken).maxAmountRequired,
                 resource: defineValue(this.request?.url, ""),
                 description: defineValue(this.payloadConfig?.description, ""),
                 mimeType: defineValue(this.payloadConfig?.mimeType, ""),
@@ -195,11 +196,12 @@ export default class X402Builder {
         return payment;
     }
 
-    private get decode(): PaymentPayload {
-        let decodedPayment: PaymentPayload;
+    private decode(): PaymentPayload {
+        const payment: string = this.payment;
+
         try {
-            decodedPayment = exact.evm.decodePayment(this.payment);
-            decodedPayment.x402Version = this.config.version;
+            this.decoded = exact.evm.decodePayment(payment);
+            this.decoded.x402Version = this.config.version;
         } catch (error: any) {
             throw new X402Exception(defineValue(error?.message, "Invalid or mailformed payment header."), {
                 x402Version: this.config.version,
@@ -207,11 +209,11 @@ export default class X402Builder {
             });
         }
 
-        return decodedPayment;
+        return this.decoded;
     }
 
     private get selectedPayment(): any {
-        const selectedPaymentRequirements = findMatchingPaymentRequirements(this.paymentRequirements, this.decode);
+        const selectedPaymentRequirements = findMatchingPaymentRequirements(this.paymentRequirements, this.decoded as PaymentPayload);
         if (isEmpty(selectedPaymentRequirements)) {
             throw new X402Exception("Unable to find matching payment requirements.", {
                 x402Version: this.config.version,
@@ -223,9 +225,15 @@ export default class X402Builder {
     }
 
     private async verify(): Promise<void> {
+        this.initToken();
+
+        await this.requirements();
+
+        this.decode();
+
         let response: any;
         try {
-            response = await this.facilitator.verify(this.decode, this.selectedPayment);
+            response = await this.facilitator.verify(this.decoded, this.selectedPayment);
         } catch (error: any) {
             throw new X402Exception(defineValue(error?.message, "Failed to verify payment."), {
                 x402Version: this.config.version,
@@ -243,9 +251,11 @@ export default class X402Builder {
     }
 
     private async settle(): Promise<void> {
+        await this.verify();
+
         let settleResponse: any;
         try {
-            settleResponse = await this.facilitator.settle(this.decode, this.selectedPayment);
+            settleResponse = await this.facilitator.settle(this.decoded, this.selectedPayment);
             const responseHeader = settleResponseHeader(settleResponse);
             this.request?.headers?.set("X-PAYMENT-RESPONSE", responseHeader);
         } catch (error: any) {
@@ -263,19 +273,19 @@ export default class X402Builder {
         }
     }
 
-    public setConfig(config: TX402Config): X402Builder {
+    public setConfig(config?: TX402Config): X402Builder {
         this.payloadConfig = config;
 
         return this;
     }
 
-    public setFacilitator(config: FacilitatorConfig): X402Builder {
+    public setFacilitator(config?: FacilitatorConfig): X402Builder {
         this.facilitatorConfig = config;
 
         return this;
     }
 
-    public setPaywall(config: PaywallConfig): X402Builder {
+    public setPaywall(config?: PaywallConfig): X402Builder {
         this.paywallConfig = config;
 
         return this;
@@ -287,13 +297,13 @@ export default class X402Builder {
         return this;
     }
 
-    public middleware(): any {
+    public async middleware(handler: Function): Promise<any> {
         try {
-            this.verify();
-            this.settle();
-        } catch (error) {
-            // @ts-ignore
-            if (isNotEmpty(error?.data?.html)) return globalThis.Response((error as X402Exception).data.html, {
+            await this.settle();
+
+            return handler();
+        } catch (error: any) {
+            if (isNotEmpty(error?.data?.html)) return new Response((error as X402Exception).data.html, {
                 headers: {
                     "Content-Type": "text/html"
                 }

@@ -44,7 +44,6 @@ const config: Record<string, any> = {
     address: "0x0000000000000000000000000000000000000000",
     price: "$0.01",
     timeout: 60,
-    discoverable: true,
     forceJson: false,
     testnet: true
 };
@@ -58,9 +57,35 @@ You can pass the value with environment variables.
 How to use tha package.
 
 ```ts
+import type {TX402Config} from "@bejibun/x402";
+import type {FacilitatorConfig, PaywallConfig} from "x402/types";
 import X402 from "@bejibun/x402";
 
-X402.setConfig().setFacilitator().setPaywall().setRequest().middleware(); // Not yet finished
+/**
+ * setConfig(config?: TX402Config)
+ * {
+ *     customPaywallHtml?: string;
+ *     description?: string;
+ *     discoverable?: boolean;
+ *     mimeType?: string;
+ *     inputSchema?: Record<string, any>;
+ *     outputSchema?: Record<string, any>;
+ * }
+ * 
+ * setFacilitator(config?: FacilitatorConfig)
+ * 
+ * setPaywall(config?: PaywallConfig)
+ * 
+ * setRequest(config: Bun.BunRequest) // Mandatory for request headers
+ */
+return X402
+    .setConfig()
+    .setFacilitator()
+    .setPaywall()
+    .setRequest(request)
+    .middleware(() => {
+        // your paid resource here
+    });
 ```
 
 ## Contributors
