@@ -77,7 +77,7 @@ export default class X402Builder {
         return useFacilitator(this.facilitatorConfig);
     }
 
-    private initToken(): TToken {
+    private initToken(): TToken | undefined {
         const atomicAmountForAsset = processPriceToAtomicAmount(this.config.price, this.config.network);
         if ("error" in atomicAmountForAsset) throw new X402Exception(atomicAmountForAsset.error);
 
@@ -242,7 +242,7 @@ export default class X402Builder {
         }
 
         if (!response.isValid) {
-            throw new X402Exception("Unable to find matching payment requirements.", {
+            throw new X402Exception(response.invalidReason, {
                 x402Version: this.config.version,
                 accepts: toJsonSafe(this.paymentRequirements),
                 payer: response.payer
