@@ -186,7 +186,7 @@ export default class X402Builder {
             });
         }
         if (!response.isValid) {
-            throw new X402Exception("Unable to find matching payment requirements.", {
+            throw new X402Exception(response.invalidReason, {
                 x402Version: this.config.version,
                 accepts: toJsonSafe(this.paymentRequirements),
                 payer: response.payer
