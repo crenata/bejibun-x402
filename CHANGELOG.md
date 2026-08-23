@@ -3,6 +3,24 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [v0.2.12](https://github.com/Bejibun-Framework/bejibun-x402/compare/v0.2.11...v0.2.12) - 2026-08-23
+
+### 🩹 Fixes
+
+### 📖 Changes
+
+### 📦 Dependencies
+
+- Bumped `@types/bun` (devDependency) from `^1.3.14` to `^1.4.0`
+- Bumped `eslint` (devDependency) from `^10.8.1` to `^10.9.0`
+
+### ❤️Contributors
+- Havea Crenata ([@crenata](https://github.com/crenata))
+
+**Full Changelog**: https://github.com/Bejibun-Framework/bejibun-x402/blob/master/CHANGELOG.md
+
+---
+
 ## [v0.2.11](https://github.com/Bejibun-Framework/bejibun-x402/compare/v0.2.0...v0.2.11) - 2026-08-20
 
 ### 🩹 Fixes
