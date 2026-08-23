@@ -8,6 +8,14 @@ All notable changes to this project will be documented in this file.
 ### 🩹 Fixes
 
 ### 📖 Changes
+#### `X402Builder` performance
+Reworked per-request work in `X402Builder` into process-level caches, since a new builder is constructed for every request:
+- App config (`config/x402.ts` or the package default) is now resolved once per process and reused, instead of hitting the filesystem and `require`-ing the config file on every request
+- The route's `accepts` array is now memoized -- keyed per `routePaymentConfig` object reference via a `WeakMap`, or cached once for the default (no per-route override) case -- so it's no longer rebuilt and `JSON.stringify`'d on every request, including on cache-hit requests where it previously ran before the server-cache lookup happened
+- The `x402HTTPResourceServer` cache key now reuses the pre-computed `accepts` JSON key instead of recomputing `JSON.stringify(this.accepts)` per request
+
+#### Documentation
+- Added JSDoc comments across `X402Builder`, `BunAdapter`, `X402` facade, `X402Exception`, config, `configure.ts`, and the `x402` type definitions
 
 ### 📦 Dependencies
 
