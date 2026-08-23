@@ -1,6 +1,11 @@
 import type {TFacilitator, TNetwork, TPrice, TScheme} from "@/types/x402";
 import {facilitator} from "@coinbase/x402";
 
+/**
+ * Default x402 configuration used when the consuming app doesn't provide
+ * its own `config/x402.ts`. Defines the default payment scheme/price, the
+ * networks (and payout addresses) accepted, and the payment facilitator.
+ */
 const config: Record<string, any> = {
     scheme: "exact" as TScheme,
     price: "$1" as TPrice,
