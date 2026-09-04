@@ -3,7 +3,7 @@ All notable changes to this project will be documented in this file.
 
 ---
 
-## [v0.2.12](https://github.com/Bejibun-Framework/bejibun-x402/compare/v0.2.11...v0.2.12) - 2026-08-23
+## [v0.2.12](https://github.com/Bejibun-Framework/bejibun-x402/compare/v0.2.11...v0.2.12) - 2026-09-04
 
 ### 🩹 Fixes
 
@@ -16,11 +16,33 @@ Reworked per-request work in `X402Builder` into process-level caches, since a ne
 
 #### Documentation
 - Added JSDoc comments across `X402Builder`, `BunAdapter`, `X402` facade, `X402Exception`, config, `configure.ts`, and the `x402` type definitions
+- Re-exported the `X402Exception` classes from the package root (`@/exceptions/index`) for consistency with the cache, limiter, and storage entry points
+
+#### Micro-optimizations
+- Replaced the `@bejibun/utils` `defineValue`/`isEmpty`/`isNotEmpty` calls with native nullish coalescing (`??`) and truthiness checks across `X402Builder`, `BunAdapter`, and `X402Exception`, removing the type-checking overhead from the per-request hot paths (scheme/price/description/mimeType/facilitator getters, adapter header/query lookups, and exception construction)
+
+### 🧪 Tests
+- Added unit test suite (15 tests across 1 file in `tests/unit`) covering `X402Exception` (default/custom status code and data), the `X402` facade (delegation to `X402Builder`), `X402Builder` chaining and the `middleware` setRequest guard, and `BunAdapter` (method/path/url/header/query handling), with silenced logger output
+- Added an integration test suite (4 tests across 1 file in `tests/integration`) that imports the real package entry and verifies the default/named `X402` export, the `X402Exception` re-export, builder construction, and config resolution without error
+- Added `test` (unit) and `test:integration` scripts and added `tests` to tsconfig `exclude` so compiled output never lands in `tests/`
+
+### ⚡ Benchmarks
+- Added benchmark suite comparing baseline (`@bejibun/x402@0.2.11`) vs the optimized build, covering `construction`, `bunAdapter`, and `facade setRoutePayment` CPU-bound hot paths (no facilitator I/O); full results are written to `benchmarks/README.md` between the `BENCHMARK` markers
+- Also added a cold-start suite spawning 30 fresh OS processes per variant and measuring full process time and import time
+- Throughput results: `construction` **33.12x** (38.7 vs 1.2ms, ~17.1M ops/s), `facade setRoutePayment` **34.34x** (43.6 vs 1.3ms, ~15.8M ops/s), `bunAdapter` ~1.01x (18.0 vs 17.8ms); cold start ~1.0x
 
 ### 📦 Dependencies
 
-- Bumped `@types/bun` (devDependency) from `^1.3.14` to `^1.4.0`
-- Bumped `eslint` (devDependency) from `^10.8.1` to `^10.9.0`
+- Bumped [`@bejibun/app`](https://github.com/Bejibun-Framework/bejibun-app) from `^0.1.25` to `^0.1.26`
+- Bumped [`@bejibun/logger`](https://github.com/Bejibun-Framework/bejibun-logger) from `^0.1.23` to `^0.2.1`
+- Bumped [`@bejibun/utils`](https://github.com/Bejibun-Framework/bejibun-utils) from `^0.1.29` to `^0.1.30`
+- Bumped `@x402/core` from `^2.23.0` to `^2.25.0`
+- Bumped `@x402/evm` from `^2.23.0` to `^2.25.0`
+- Bumped `@x402/svm` from `^2.23.0` to `^2.25.0`
+- Bumped `eslint` (devDependency) from `^10.9.0` to `^10.9.1`
+- Bumped `globals` (devDependency) from `^17.11.0` to `^17.12.0`
+- Bumped `tsc-alias` (devDependency) from `^1.9.2` to `^1.9.4`
+- Bumped `typescript-eslint` (devDependency) from `^8.67.0` to `^8.69.0`
 
 ### ❤️Contributors
 - Havea Crenata ([@crenata](https://github.com/crenata))

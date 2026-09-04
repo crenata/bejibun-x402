@@ -12,10 +12,10 @@ export default class X402Exception extends Error {
     /**
      * Creates and logs a new X402Exception.
      *
-     * @param message - Human-readable error message.
-     * @param data - Optional extra context to attach to the error.
-     * @param code - Optional status code override (defaults to 502).
-     * @returns A new X402Exception instance.
+     * @param {string} message - Human-readable error message.
+     * @param {any} data - Optional extra context to attach to the error.
+     * @param {number} code - Optional status code override (defaults to 502).
+     * @returns {X402Exception} A new X402Exception instance.
      */
     constructor(message?: string, data?: any, code?: number);
 }

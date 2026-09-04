@@ -14,7 +14,7 @@ export type TAssetAmount = {
 };
 
 /**
- * Facilitator connection info used to verify and settle payments. `url`
+ * Facilitator connection info for verifying and settling payments. `url`
  * points at the facilitator's API; `createAuthHeaders` optionally builds
  * per-operation auth headers (verify/settle/supported/bazaar).
  */
@@ -53,7 +53,7 @@ export type TMoney = string | number;
 /** The price to charge: either fiat-style money or a specific asset amount. */
 export type TPrice = TAssetAmount | TMoney;
 
-/** The payment scheme used to verify/settle a payment. */
+/** The payment scheme for verifying and settling a payment. */
 export type TScheme = "exact" | "upto" | "batch-settlement";
 
 /**

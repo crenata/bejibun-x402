@@ -25,27 +25,27 @@ export default class X402Builder {
      * exists on disk, otherwise falls back to the package's default config.
      * Resolved once per process and reused by every instance.
      *
-     * @returns A new X402Builder instance with its config resolved.
+     * @returns {X402Builder} A new X402Builder instance with its config resolved.
      */
     constructor();
     /**
      * Retrieves the active config object.
      *
      * @throws {X402Exception} If no config could be resolved.
-     * @returns The resolved x402 config.
+     * @returns {Record<string, any>} The resolved x402 config.
      */
     private get config();
     /**
      * Resolves the payment scheme to use.
      *
-     * @returns The per-route override, falling back to the config file
+     * @returns {TScheme} The per-route override, falling back to the config file
      * value, then to `"exact"`.
      */
     private get scheme();
     /**
      * Resolves the price to charge.
      *
-     * @returns The per-route override, falling back to the config file
+     * @returns {TPrice} The per-route override, falling back to the config file
      * value, then to `"$1"`.
      */
     private get price();
@@ -53,19 +53,19 @@ export default class X402Builder {
      * Resolves the human-readable description attached to the payment
      * requirement.
      *
-     * @returns The per-route override, falling back to a default description.
+     * @returns {string} The per-route override, falling back to a default description.
      */
     private get description();
     /**
      * Resolves the response MIME type to advertise/use for payment responses.
      *
-     * @returns The per-route override, falling back to `"application/json"`.
+     * @returns {string} The per-route override, falling back to `"application/json"`.
      */
     private get mimeType();
     /**
      * Resolves the facilitator to use for verification/settlement.
      *
-     * @returns The instance override set via setFacilitator(), falling
+     * @returns {TFacilitator} The instance override set via setFacilitator(), falling
      * back to the config file value, then to the default Coinbase facilitator.
      */
     private get facilitator();
@@ -74,14 +74,14 @@ export default class X402Builder {
      * reference (or process-wide when relying purely on the global config)
      * so it's only computed once per route rather than on every request.
      *
-     * @returns The cached entry containing the resolved accepts array and
+     * @returns {{accepts: Array<TNetworkPayment>; key: string}} The cached entry containing the resolved accepts array and
      * its pre-computed JSON cache key.
      */
     private get acceptsEntry();
     /**
      * The resolved accepts array for the route, memoized via acceptsEntry.
      *
-     * @returns The resolved list of network payment terms for the route.
+     * @returns {Array<TNetworkPayment>} The resolved list of network payment terms for the route.
      */
     private get accepts();
     /**
@@ -94,7 +94,7 @@ export default class X402Builder {
      *   3. config.networks             — both EVM + SVM from config file
      *   4. built-in defaults (EVM Base + Solana mainnet)
      *
-     * @returns The resolved list of network payment terms for the route.
+     * @returns {Array<TNetworkPayment>} The resolved list of network payment terms for the route.
      */
     private resolveAccepts;
     /**
@@ -108,33 +108,33 @@ export default class X402Builder {
      * that hasn't been initialized yet share the same in-flight promise
      * so only one server is ever built per key.
      *
-     * @param adapter - The Bun request adapter for the current route.
-     * @returns The initialized (possibly cached) x402HTTPResourceServer.
+     * @param {BunAdapter} adapter - The Bun request adapter for the current route.
+     * @returns {Promise<x402HTTPResourceServer>} The initialized (possibly cached) x402HTTPResourceServer.
      */
     private buildHttpServer;
     /**
      * Overrides the facilitator used for verification/settlement on this
      * builder instance.
      *
-     * @param config - The facilitator to use, or `undefined` to clear the override.
-     * @returns This builder instance, for chaining.
+     * @param {TFacilitator} config - The facilitator to use, or `undefined` to clear the override.
+     * @returns {X402Builder} This builder instance, for chaining.
      */
     setFacilitator(config?: TFacilitator): X402Builder;
     /**
      * Sets per-route payment options that take priority over the
      * app-level config.
      *
-     * @param config - Route-level overrides (scheme, price, network,
+     * @param {TRoutePayment} config - Route-level overrides (scheme, price, network,
      * payTo, accepts, etc.), or `undefined` to clear the override.
-     * @returns This builder instance, for chaining.
+     * @returns {X402Builder} This builder instance, for chaining.
      */
     setRoutePayment(config?: TRoutePayment): X402Builder;
     /**
      * Sets the incoming Bun request to be processed by middleware().
      * Must be called before middleware().
      *
-     * @param request - The incoming Bun request.
-     * @returns This builder instance, for chaining.
+     * @param {Bun.BunRequest} request - The incoming Bun request.
+     * @returns {X402Builder} This builder instance, for chaining.
      */
     setRequest(request: Bun.BunRequest): X402Builder;
     /**
@@ -145,9 +145,9 @@ export default class X402Builder {
      *   - Invalid payment    -> 402 + PAYMENT-REQUIRED header (with error)
      *   - Valid payment      -> verifies, calls handler(), settles, attaches PAYMENT-RESPONSE header
      *
-     * @param handler - The route handler to invoke once payment is verified (or immediately, if no payment is required).
+     * @param {Function} handler - The route handler to invoke once payment is verified (or immediately, if no payment is required).
      * @throws {X402Exception} If setRequest() wasn't called first, or if request processing fails unexpectedly.
-     * @returns The final Response to send to the client.
+     * @returns {Promise<Response>} The final Response to send to the client.
      */
     middleware(handler: () => Promise<Response>): Promise<Response>;
 }

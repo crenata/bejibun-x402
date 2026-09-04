@@ -1,2 +1,4 @@
-// Re-exports all exception types for `@/exceptions` consumers.
-export * from "@/exceptions/X402Exception";
+/**
+ * Re-exports the X402 exception classes.
+ */
+export {default as X402Exception} from "@/exceptions/X402Exception";

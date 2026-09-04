@@ -1,6 +1,6 @@
 {
     "name": "@bejibun/x402",
-    "version": "0.2.11",
+    "version": "0.2.12",
     "author": "Havea Crenata <havea.crenata@gmail.com>",
     "repository": {
         "type": "git",
@@ -11,13 +11,13 @@
     "devDependencies": {
         "@eslint/js": "^10.0.1",
         "@types/bun": "^1.4.0",
-        "eslint": "^10.9.0",
+        "eslint": "^10.9.1",
         "eslint-config-prettier": "^10.1.8",
-        "globals": "^17.11.0",
+        "globals": "^17.12.0",
         "prettier": "^3.9.6",
-        "tsc-alias": "^1.9.2",
+        "tsc-alias": "^1.9.4",
         "typescript": "^6.0.3",
-        "typescript-eslint": "^8.67.0"
+        "typescript-eslint": "^8.69.0"
     },
     "bugs": {
         "url": "https://github.com/Bejibun-Framework/bejibun-x402/issues"
@@ -40,18 +40,19 @@
         "format": "prettier --write src --log-level=silent",
         "eslint": "eslint src",
         "lint": "bun run format && bun run eslint",
+        "test": "bun test tests/",
         "build": "bun run lint && tsc -p tsconfig.json && bun run types && bun run alias && bun run rsync && bun run clean",
         "deploy": "bun run build && bun publish --access public"
     },
     "type": "module",
     "types": "index.d.ts",
     "dependencies": {
-        "@bejibun/app": "^0.1.25",
-        "@bejibun/logger": "^0.1.23",
-        "@bejibun/utils": "^0.1.29",
+        "@bejibun/app": "^0.1.26",
+        "@bejibun/logger": "^0.2.1",
+        "@bejibun/utils": "^0.1.30",
         "@coinbase/x402": "^2.1.0",
-        "@x402/core": "^2.23.0",
-        "@x402/evm": "^2.23.0",
-        "@x402/svm": "^2.23.0"
+        "@x402/core": "^2.25.0",
+        "@x402/evm": "^2.25.0",
+        "@x402/svm": "^2.25.0"
     }
 }

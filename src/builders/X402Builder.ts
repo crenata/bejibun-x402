@@ -13,7 +13,6 @@ import type {
     TScheme
 } from "@/types/x402";
 import App from "@bejibun/app";
-import {defineValue, isEmpty, isNotEmpty} from "@bejibun/utils";
 import {facilitator as CoinbaseFacilitator} from "@coinbase/x402";
 import {x402HTTPResourceServer} from "@x402/core/http";
 import {
@@ -77,10 +76,10 @@ export default class X402Builder {
      * exists on disk, otherwise falls back to the package's default config.
      * Resolved once per process and reused by every instance.
      *
-     * @returns A new X402Builder instance with its config resolved.
+     * @returns {X402Builder} A new X402Builder instance with its config resolved.
      */
     public constructor() {
-        if (isEmpty(X402Builder._resolvedConfig)) {
+        if (!X402Builder._resolvedConfig) {
             const configPath: string = App.Path.configPath("x402.ts");
 
             X402Builder._resolvedConfig = fs.existsSync(configPath)
@@ -95,10 +94,10 @@ export default class X402Builder {
      * Retrieves the active config object.
      *
      * @throws {X402Exception} If no config could be resolved.
-     * @returns The resolved x402 config.
+     * @returns {Record<string, any>} The resolved x402 config.
      */
     private get config(): Record<string, any> {
-        if (isEmpty(this.conf)) throw new X402Exception("There is no config provided.");
+        if (!this.conf) throw new X402Exception("There is no config provided.");
 
         return this.conf;
     }
@@ -106,59 +105,50 @@ export default class X402Builder {
     /**
      * Resolves the payment scheme to use.
      *
-     * @returns The per-route override, falling back to the config file
+     * @returns {TScheme} The per-route override, falling back to the config file
      * value, then to `"exact"`.
      */
     private get scheme(): TScheme {
-        return defineValue(
-            this.routePaymentConfig?.scheme,
-            defineValue(this.config.scheme, "exact")
-        );
+        return this.routePaymentConfig?.scheme ?? this.config.scheme ?? "exact";
     }
 
     /**
      * Resolves the price to charge.
      *
-     * @returns The per-route override, falling back to the config file
+     * @returns {TPrice} The per-route override, falling back to the config file
      * value, then to `"$1"`.
      */
     private get price(): TPrice {
-        return defineValue(this.routePaymentConfig?.price, defineValue(this.config.price, "$1"));
+        return this.routePaymentConfig?.price ?? this.config.price ?? "$1";
     }
 
     /**
      * Resolves the human-readable description attached to the payment
      * requirement.
      *
-     * @returns The per-route override, falling back to a default description.
+     * @returns {string} The per-route override, falling back to a default description.
      */
     private get description(): string {
-        return defineValue(
-            this.routePaymentConfig?.description,
-            "Monetized endpoint with x402 protocol."
-        );
+        return this.routePaymentConfig?.description ?? "Monetized endpoint with x402 protocol.";
     }
 
     /**
      * Resolves the response MIME type to advertise/use for payment responses.
      *
-     * @returns The per-route override, falling back to `"application/json"`.
+     * @returns {string} The per-route override, falling back to `"application/json"`.
      */
     private get mimeType(): string {
-        return defineValue(this.routePaymentConfig?.mimeType, "application/json");
+        return this.routePaymentConfig?.mimeType ?? "application/json";
     }
 
     /**
      * Resolves the facilitator to use for verification/settlement.
      *
-     * @returns The instance override set via setFacilitator(), falling
+     * @returns {TFacilitator} The instance override set via setFacilitator(), falling
      * back to the config file value, then to the default Coinbase facilitator.
      */
     private get facilitator(): TFacilitator {
-        return defineValue(
-            this._facilitator,
-            defineValue(this.config?.facilitator, CoinbaseFacilitator)
-        );
+        return this._facilitator ?? this.config?.facilitator ?? CoinbaseFacilitator;
     }
 
     /**
@@ -166,14 +156,14 @@ export default class X402Builder {
      * reference (or process-wide when relying purely on the global config)
      * so it's only computed once per route rather than on every request.
      *
-     * @returns The cached entry containing the resolved accepts array and
+     * @returns {{accepts: Array<TNetworkPayment>; key: string}} The cached entry containing the resolved accepts array and
      * its pre-computed JSON cache key.
      */
     private get acceptsEntry(): {accepts: Array<TNetworkPayment>; key: string} {
-        if (isNotEmpty(this.routePaymentConfig)) {
+        if (this.routePaymentConfig) {
             const cached = X402Builder._acceptsCache.get(this.routePaymentConfig!);
 
-            if (isNotEmpty(cached)) return cached as {accepts: Array<TNetworkPayment>; key: string};
+            if (cached) return cached as {accepts: Array<TNetworkPayment>; key: string};
         } else if (X402Builder._defaultAcceptsEntry) {
             return X402Builder._defaultAcceptsEntry;
         }
@@ -181,7 +171,7 @@ export default class X402Builder {
         const accepts = this.resolveAccepts();
         const entry = {accepts, key: JSON.stringify(accepts)};
 
-        if (isNotEmpty(this.routePaymentConfig)) {
+        if (this.routePaymentConfig) {
             X402Builder._acceptsCache.set(this.routePaymentConfig!, entry);
         } else {
             X402Builder._defaultAcceptsEntry = entry;
@@ -193,7 +183,7 @@ export default class X402Builder {
     /**
      * The resolved accepts array for the route, memoized via acceptsEntry.
      *
-     * @returns The resolved list of network payment terms for the route.
+     * @returns {Array<TNetworkPayment>} The resolved list of network payment terms for the route.
      */
     private get accepts(): Array<TNetworkPayment> {
         return this.acceptsEntry.accepts;
@@ -209,26 +199,23 @@ export default class X402Builder {
      *   3. config.networks             — both EVM + SVM from config file
      *   4. built-in defaults (EVM Base + Solana mainnet)
      *
-     * @returns The resolved list of network payment terms for the route.
+     * @returns {Array<TNetworkPayment>} The resolved list of network payment terms for the route.
      */
     private resolveAccepts(): Array<TNetworkPayment> {
         // 1. Explicit accepts array on the route config
-        if (isNotEmpty(this.routePaymentConfig?.accepts)) {
+        if (this.routePaymentConfig?.accepts?.length) {
             return this.routePaymentConfig!.accepts!.map((entry: TNetworkPayment) => ({
-                scheme: defineValue(entry.scheme, this.scheme),
-                price: defineValue(entry.price, this.price),
+                scheme: entry.scheme ?? this.scheme,
+                price: entry.price ?? this.price,
                 network: entry.network,
                 payTo: entry.payTo,
-                description: defineValue(entry.description, this.description),
-                mimeType: defineValue(entry.mimeType, this.mimeType)
+                description: entry.description ?? this.description,
+                mimeType: entry.mimeType ?? this.mimeType
             }));
         }
 
         // 2. Single-network shorthand on the route config
-        if (
-            isNotEmpty(this.routePaymentConfig?.network) &&
-            isNotEmpty(this.routePaymentConfig?.payTo)
-        ) {
+        if (this.routePaymentConfig?.network && this.routePaymentConfig?.payTo) {
             return [
                 {
                     scheme: this.scheme,
@@ -242,7 +229,7 @@ export default class X402Builder {
         }
 
         // 3. Multi-network block in config file
-        if (isNotEmpty(this.config.networks)) {
+        if (this.config.networks?.length) {
             return this.config.networks!.map((entry: {network: TNetwork; payTo: string}) => ({
                 scheme: this.scheme,
                 price: this.price,
@@ -296,8 +283,8 @@ export default class X402Builder {
      * that hasn't been initialized yet share the same in-flight promise
      * so only one server is ever built per key.
      *
-     * @param adapter - The Bun request adapter for the current route.
-     * @returns The initialized (possibly cached) x402HTTPResourceServer.
+     * @param {BunAdapter} adapter - The Bun request adapter for the current route.
+     * @returns {Promise<x402HTTPResourceServer>} The initialized (possibly cached) x402HTTPResourceServer.
      */
     private async buildHttpServer(adapter: BunAdapter): Promise<x402HTTPResourceServer> {
         const cacheKey = `${adapter.getMethod()} ${adapter.getPath()}:${this.acceptsEntry.key}`;
@@ -362,7 +349,7 @@ export default class X402Builder {
                     await httpServer.initialize();
                 } catch (error: any) {
                     const facilitatorError = getFacilitatorResponseError(error);
-                    if (isNotEmpty(facilitatorError)) {
+                    if (facilitatorError) {
                         throw new X402Exception(
                             (facilitatorError as FacilitatorResponseError).message
                         );
@@ -387,8 +374,8 @@ export default class X402Builder {
      * Overrides the facilitator used for verification/settlement on this
      * builder instance.
      *
-     * @param config - The facilitator to use, or `undefined` to clear the override.
-     * @returns This builder instance, for chaining.
+     * @param {TFacilitator} config - The facilitator to use, or `undefined` to clear the override.
+     * @returns {X402Builder} This builder instance, for chaining.
      */
     public setFacilitator(config?: TFacilitator): X402Builder {
         this._facilitator = config;
@@ -400,9 +387,9 @@ export default class X402Builder {
      * Sets per-route payment options that take priority over the
      * app-level config.
      *
-     * @param config - Route-level overrides (scheme, price, network,
+     * @param {TRoutePayment} config - Route-level overrides (scheme, price, network,
      * payTo, accepts, etc.), or `undefined` to clear the override.
-     * @returns This builder instance, for chaining.
+     * @returns {X402Builder} This builder instance, for chaining.
      */
     public setRoutePayment(config?: TRoutePayment): X402Builder {
         this.routePaymentConfig = config;
@@ -414,8 +401,8 @@ export default class X402Builder {
      * Sets the incoming Bun request to be processed by middleware().
      * Must be called before middleware().
      *
-     * @param request - The incoming Bun request.
-     * @returns This builder instance, for chaining.
+     * @param {Bun.BunRequest} request - The incoming Bun request.
+     * @returns {X402Builder} This builder instance, for chaining.
      */
     public setRequest(request: Bun.BunRequest): X402Builder {
         this.request = request;
@@ -431,12 +418,12 @@ export default class X402Builder {
      *   - Invalid payment    -> 402 + PAYMENT-REQUIRED header (with error)
      *   - Valid payment      -> verifies, calls handler(), settles, attaches PAYMENT-RESPONSE header
      *
-     * @param handler - The route handler to invoke once payment is verified (or immediately, if no payment is required).
+     * @param {Function} handler - The route handler to invoke once payment is verified (or immediately, if no payment is required).
      * @throws {X402Exception} If setRequest() wasn't called first, or if request processing fails unexpectedly.
-     * @returns The final Response to send to the client.
+     * @returns {Promise<Response>} The final Response to send to the client.
      */
     public async middleware(handler: () => Promise<Response>): Promise<Response> {
-        if (isEmpty(this.request))
+        if (!this.request)
             throw new X402Exception("setRequest() must be called before middleware().");
 
         const adapter: BunAdapter = new BunAdapter(this.request as Bun.BunRequest);
@@ -448,10 +435,7 @@ export default class X402Builder {
             adapter,
             path: adapter.getPath(),
             method: adapter.getMethod(),
-            paymentHeader: defineValue(
-                adapter.getHeader("payment-signature"),
-                adapter.getHeader("x-payment")
-            )
+            paymentHeader: adapter.getHeader("payment-signature") ?? adapter.getHeader("x-payment")
         };
 
         let result: HTTPProcessResult;
@@ -461,7 +445,7 @@ export default class X402Builder {
             throw new X402Exception(error.message);
         }
 
-        if (isEmpty(result)) {
+        if (!result) {
             result = {
                 type: "no-payment-required"
             };
@@ -479,7 +463,7 @@ export default class X402Builder {
             case "payment-error": {
                 const {status, headers, body, isHtml} = result.response;
 
-                return new Response(isEmpty(body) ? null : JSON.stringify(body), {
+                return new Response(!body ? null : JSON.stringify(body), {
                     headers: {
                         ...headers,
                         "Content-Type": isHtml ? "text/html" : this.mimeType,
@@ -539,7 +523,7 @@ export default class X402Builder {
 
                     if (!settlement.success) {
                         const {status, headers, body, isHtml} = settlement.response;
-                        return new Response(isEmpty(body) ? null : JSON.stringify(body), {
+                        return new Response(!body ? null : JSON.stringify(body), {
                             headers: {
                                 ...headers,
                                 "Content-Type": isHtml ? "text/html" : this.mimeType,
@@ -563,7 +547,7 @@ export default class X402Builder {
                     });
                 } catch (error: any) {
                     const facilitatorError = getFacilitatorResponseError(error);
-                    if (isNotEmpty(facilitatorError)) {
+                    if (facilitatorError) {
                         return new Response(
                             JSON.stringify({
                                 error: (facilitatorError as FacilitatorResponseError).message
@@ -578,7 +562,7 @@ export default class X402Builder {
                         );
                     }
 
-                    // Fallback: return 402 like Express does
+                    // Fallback: return 402 status
                     return new Response(JSON.stringify({}), {
                         headers: {
                             "Content-Type": "application/json",
