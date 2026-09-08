@@ -24,7 +24,7 @@ export default class BunAdapter implements HTTPAdapter {
      * @returns {string | undefined} The header value, or `undefined` if it isn't present.
      */
     public getHeader(name: string): string | undefined {
-        return this.request.headers.get(name) ?? undefined;
+        return this.request.headers.get(name) || undefined;
     }
 
     /**
@@ -60,7 +60,7 @@ export default class BunAdapter implements HTTPAdapter {
      * @returns {string} The `Accept` header value, or an empty string if absent.
      */
     public getAcceptHeader(): string {
-        return this.request.headers.get("accept") ?? "";
+        return this.request.headers.get("accept") || "";
     }
 
     /**
@@ -69,7 +69,7 @@ export default class BunAdapter implements HTTPAdapter {
      * @returns {string} The `User-Agent` header value, or an empty string if absent.
      */
     public getUserAgent(): string {
-        return this.request.headers.get("user-agent") ?? "";
+        return this.request.headers.get("user-agent") || "";
     }
 
     /**
@@ -79,7 +79,7 @@ export default class BunAdapter implements HTTPAdapter {
      * @returns {string | undefined} The parameter value, or `undefined` if it isn't present.
      */
     public getQueryParam(name: string): string | undefined {
-        return this.url.searchParams.get(name) ?? undefined;
+        return this.url.searchParams.get(name) || undefined;
     }
 
     /**

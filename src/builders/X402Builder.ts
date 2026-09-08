@@ -109,7 +109,7 @@ export default class X402Builder {
      * value, then to `"exact"`.
      */
     private get scheme(): TScheme {
-        return this.routePaymentConfig?.scheme ?? this.config.scheme ?? "exact";
+        return this.routePaymentConfig?.scheme || this.config.scheme || "exact";
     }
 
     /**
@@ -119,7 +119,7 @@ export default class X402Builder {
      * value, then to `"$1"`.
      */
     private get price(): TPrice {
-        return this.routePaymentConfig?.price ?? this.config.price ?? "$1";
+        return this.routePaymentConfig?.price || this.config.price || "$1";
     }
 
     /**
@@ -129,7 +129,7 @@ export default class X402Builder {
      * @returns {string} The per-route override, falling back to a default description.
      */
     private get description(): string {
-        return this.routePaymentConfig?.description ?? "Monetized endpoint with x402 protocol.";
+        return this.routePaymentConfig?.description || "Monetized endpoint with x402 protocol.";
     }
 
     /**
@@ -138,7 +138,7 @@ export default class X402Builder {
      * @returns {string} The per-route override, falling back to `"application/json"`.
      */
     private get mimeType(): string {
-        return this.routePaymentConfig?.mimeType ?? "application/json";
+        return this.routePaymentConfig?.mimeType || "application/json";
     }
 
     /**
@@ -148,7 +148,7 @@ export default class X402Builder {
      * back to the config file value, then to the default Coinbase facilitator.
      */
     private get facilitator(): TFacilitator {
-        return this._facilitator ?? this.config?.facilitator ?? CoinbaseFacilitator;
+        return this._facilitator || this.config?.facilitator || CoinbaseFacilitator;
     }
 
     /**
@@ -205,12 +205,12 @@ export default class X402Builder {
         // 1. Explicit accepts array on the route config
         if (this.routePaymentConfig?.accepts?.length) {
             return this.routePaymentConfig!.accepts!.map((entry: TNetworkPayment) => ({
-                scheme: entry.scheme ?? this.scheme,
-                price: entry.price ?? this.price,
+                scheme: entry.scheme || this.scheme,
+                price: entry.price || this.price,
                 network: entry.network,
                 payTo: entry.payTo,
-                description: entry.description ?? this.description,
-                mimeType: entry.mimeType ?? this.mimeType
+                description: entry.description || this.description,
+                mimeType: entry.mimeType || this.mimeType
             }));
         }
 
@@ -435,7 +435,7 @@ export default class X402Builder {
             adapter,
             path: adapter.getPath(),
             method: adapter.getMethod(),
-            paymentHeader: adapter.getHeader("payment-signature") ?? adapter.getHeader("x-payment")
+            paymentHeader: adapter.getHeader("payment-signature") || adapter.getHeader("x-payment")
         };
 
         let result: HTTPProcessResult;

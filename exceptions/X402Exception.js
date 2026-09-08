@@ -21,8 +21,8 @@ export default class X402Exception extends Error {
     constructor(message, data, code) {
         super(message);
         this.name = "X402Exception";
-        this.code = code ?? 502;
-        this.data = data ?? undefined;
+        this.code = code || 502;
+        this.data = data || undefined;
         Logger.setContext(this.name).error(this.message).trace(this.stack);
         if (Error.captureStackTrace) {
             Error.captureStackTrace(this, X402Exception);

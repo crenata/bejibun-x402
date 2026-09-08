@@ -75,7 +75,7 @@ export default class X402Builder {
      * value, then to `"exact"`.
      */
     get scheme() {
-        return this.routePaymentConfig?.scheme ?? this.config.scheme ?? "exact";
+        return this.routePaymentConfig?.scheme || this.config.scheme || "exact";
     }
     /**
      * Resolves the price to charge.
@@ -84,7 +84,7 @@ export default class X402Builder {
      * value, then to `"$1"`.
      */
     get price() {
-        return this.routePaymentConfig?.price ?? this.config.price ?? "$1";
+        return this.routePaymentConfig?.price || this.config.price || "$1";
     }
     /**
      * Resolves the human-readable description attached to the payment
@@ -93,7 +93,7 @@ export default class X402Builder {
      * @returns {string} The per-route override, falling back to a default description.
      */
     get description() {
-        return this.routePaymentConfig?.description ?? "Monetized endpoint with x402 protocol.";
+        return this.routePaymentConfig?.description || "Monetized endpoint with x402 protocol.";
     }
     /**
      * Resolves the response MIME type to advertise/use for payment responses.
@@ -101,7 +101,7 @@ export default class X402Builder {
      * @returns {string} The per-route override, falling back to `"application/json"`.
      */
     get mimeType() {
-        return this.routePaymentConfig?.mimeType ?? "application/json";
+        return this.routePaymentConfig?.mimeType || "application/json";
     }
     /**
      * Resolves the facilitator to use for verification/settlement.
@@ -110,7 +110,7 @@ export default class X402Builder {
      * back to the config file value, then to the default Coinbase facilitator.
      */
     get facilitator() {
-        return this._facilitator ?? this.config?.facilitator ?? CoinbaseFacilitator;
+        return this._facilitator || this.config?.facilitator || CoinbaseFacilitator;
     }
     /**
      * Resolves the accepts array for a route, memoized per routePaymentConfig
@@ -163,12 +163,12 @@ export default class X402Builder {
         // 1. Explicit accepts array on the route config
         if (this.routePaymentConfig?.accepts?.length) {
             return this.routePaymentConfig.accepts.map((entry) => ({
-                scheme: entry.scheme ?? this.scheme,
-                price: entry.price ?? this.price,
+                scheme: entry.scheme || this.scheme,
+                price: entry.price || this.price,
                 network: entry.network,
                 payTo: entry.payTo,
-                description: entry.description ?? this.description,
-                mimeType: entry.mimeType ?? this.mimeType
+                description: entry.description || this.description,
+                mimeType: entry.mimeType || this.mimeType
             }));
         }
         // 2. Single-network shorthand on the route config
@@ -358,7 +358,7 @@ export default class X402Builder {
             adapter,
             path: adapter.getPath(),
             method: adapter.getMethod(),
-            paymentHeader: adapter.getHeader("payment-signature") ?? adapter.getHeader("x-payment")
+            paymentHeader: adapter.getHeader("payment-signature") || adapter.getHeader("x-payment")
         };
         let result;
         try {

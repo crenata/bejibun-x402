@@ -19,7 +19,7 @@ export default class BunAdapter {
      * @returns {string | undefined} The header value, or `undefined` if it isn't present.
      */
     getHeader(name) {
-        return this.request.headers.get(name) ?? undefined;
+        return this.request.headers.get(name) || undefined;
     }
     /**
      * Retrieves the HTTP method of the request.
@@ -51,7 +51,7 @@ export default class BunAdapter {
      * @returns {string} The `Accept` header value, or an empty string if absent.
      */
     getAcceptHeader() {
-        return this.request.headers.get("accept") ?? "";
+        return this.request.headers.get("accept") || "";
     }
     /**
      * Retrieves the request's `User-Agent` header.
@@ -59,7 +59,7 @@ export default class BunAdapter {
      * @returns {string} The `User-Agent` header value, or an empty string if absent.
      */
     getUserAgent() {
-        return this.request.headers.get("user-agent") ?? "";
+        return this.request.headers.get("user-agent") || "";
     }
     /**
      * Retrieves a single query string parameter.
@@ -68,7 +68,7 @@ export default class BunAdapter {
      * @returns {string | undefined} The parameter value, or `undefined` if it isn't present.
      */
     getQueryParam(name) {
-        return this.url.searchParams.get(name) ?? undefined;
+        return this.url.searchParams.get(name) || undefined;
     }
     /**
      * Retrieves all query string parameters.
